@@ -4,6 +4,7 @@
 #include "coroutine.hpp"
 #include "store.hpp"
 #include <functional>
+#include <stdexcept>
 
 template <class T>
 struct generator
@@ -34,7 +35,8 @@ private:
 template <class T>
 generator<T>::generator(generator<T>::body gen)
 	: value{new store_t<T>{}}
-	, coro{[value = &*value, gen](coroutine::yield&& yield) {
+	, coro{[this,gen](coroutine::yield&& yield) {
+        auto value = &*this->value;
 		gen([value, yield](T&& v){
 			*value = std::forward<T>(v);
 			yield();
